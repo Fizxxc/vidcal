@@ -1,29 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Call</title>
-    <style>
-        video {
-            width: 45%;
-            margin: 5px;
-        }
-    </style>
-</head>
 <body>
     <h1>Video Call Application</h1>
+    <input type="text" id="roomIDInput" placeholder="Enter Room ID" />
+    <button onclick="joinRoom()">Join Room</button>
     <video id="localVideo" autoplay muted></video>
     <video id="remoteVideo" autoplay></video>
 
-    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
     <script>
         const socket = io();
-        const roomID = 'room-1';
         const localVideo = document.getElementById('localVideo');
         const remoteVideo = document.getElementById('remoteVideo');
         let localStream;
         let peerConnection;
+        let roomID;
         const config = {
             iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
         };
@@ -31,8 +19,6 @@
         async function init() {
             localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             localVideo.srcObject = localStream;
-
-            socket.emit('join-room', roomID);
 
             socket.on('user-connected', (userId) => {
                 callUser(userId);
@@ -78,7 +64,14 @@
             socket.emit('signal', { target: userId, signal: peerConnection.localDescription });
         }
 
-        init();
+        function joinRoom() {
+            roomID = document.getElementById('roomIDInput').value;
+            if (roomID) {
+                socket.emit('join-room', roomID);
+                init();
+            } else {
+                alert('Please enter a valid Room ID');
+            }
+        }
     </script>
 </body>
-</html>
